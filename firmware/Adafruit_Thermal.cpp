@@ -7,7 +7,7 @@
   Please support Adafruit and open-source hardware by purchasing products
   from Adafruit!
 
-  Written by Limor Fried/Ladyada for Adafruit Industries.
+  Written by Limor Fried/Ladyada for Adafrucit Industries.
   MIT license, all text above must be included in any redistribution.
   
   This file was modified by Przemysław Grzywacz <nexather@gmail.com>
@@ -176,7 +176,7 @@ void Adafruit_Thermal::begin(SERIAL_IMPL* serial, int heatTime) {
 
   dotPrintTime = 30000; // See comments near top of file for
   dotFeedTime  =  2100; // an explanation of these values.
-  maxChunkHeight = 100;
+  maxChunkHeight = 1;
 }
 
 // Reset printer to default state.
