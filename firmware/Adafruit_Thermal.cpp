@@ -176,7 +176,7 @@ void Adafruit_Thermal::begin(SERIAL_IMPL* serial, int heatTime) {
 
   dotPrintTime = 30000; // See comments near top of file for
   dotFeedTime  =  2100; // an explanation of these values.
-  maxChunkHeight = 255;
+  maxChunkHeight = 100;
 }
 
 // Reset printer to default state.
