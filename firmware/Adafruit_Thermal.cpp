@@ -129,7 +129,7 @@ size_t Adafruit_Thermal::write(uint8_t c) {
   return 1;
 }
 
-void Adafruit_Thermal::begin(SERIAL_IMPL* serial, int heatTime) {
+void Adafruit_Thermal::begin(SERIAL_IMPL* serial, int heatTime, int maxHeatingDots, int heatingInterval) {
   _printer = serial;
 
   // The printer can't start receiving data immediately upon power up --
@@ -155,9 +155,9 @@ void Adafruit_Thermal::begin(SERIAL_IMPL* serial, int heatTime) {
   // clear, but the slower printing speed.
 
   writeBytes(27, 55);   // Esc 7 (print settings)
-  writeBytes(20);       // Heating dots (20=balance of darkness vs no jams)
+  writeBytes(maxHeatingDots);       // Heating dots (20=balance of darkness vs no jams)
   writeBytes(heatTime); // Library default = 255 (max)
-  writeBytes(250);      // Heat interval (500 uS = slower, but darker)
+  writeBytes(heatingInterval);      // Heat interval (500 uS = slower, but darker)
 
   // Description of print density from page 23 of the manual:
   // DC2 # n Set printing density
