@@ -129,7 +129,7 @@ size_t Adafruit_Thermal::write(uint8_t c) {
   return 1;
 }
 
-void Adafruit_Thermal::begin(SERIAL_IMPL* serial, int heatTime, int maxHeatingDots, int heatingInterval) {
+void Adafruit_Thermal::begin(SERIAL_IMPL* serial, int heatTime, int maxHeatingDots, int heatingInterval, int printDensity, int printBreakTime) {
   _printer = serial;
 
   // The printer can't start receiving data immediately upon power up --
@@ -167,9 +167,6 @@ void Adafruit_Thermal::begin(SERIAL_IMPL* serial, int heatTime, int maxHeatingDo
   // D7..D5 of n is used to set the printing break time.  Break time
   // is n(D7-D5)*250us.
   // (Unsure of the default value for either -- not documented)
-
-#define printDensity   14 // 120% (? can go higher, text is darker but fuzzy)
-#define printBreakTime  4 // 500 uS
 
   writeBytes(18, 35); // DC2 # (print density)
   writeBytes((printBreakTime << 5) | printDensity);
