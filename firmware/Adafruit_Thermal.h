@@ -34,7 +34,7 @@ class Adafruit_Thermal : public Print {
     timeoutSet(unsigned long),
     timeoutWait(),
     setTimes(unsigned long, unsigned long),
-    setMaxChunkHeight(int val),
+    setMaxChunkHeight(int val);
 
   size_t write(uint8_t c);
 
