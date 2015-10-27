@@ -1,33 +1,8 @@
-/*************************************************************************
-  This is an Arduino library for the Adafruit Thermal Printer.
-  Pick one up at --> http://www.adafruit.com/products/597
-  These printers use TTL serial to communicate, 2 pins are required.
-
-  Adafruit invests time and resources providing this open source code.
-  Please support Adafruit and open-source hardware by purchasing products
-  from Adafruit!
-
-  Written by Limor Fried/Ladyada for Adafrucit Industries.
-  MIT license, all text above must be included in any redistribution.
-  
-  This file was modified by Przemysław Grzywacz <nexather@gmail.com>
-  in order to run on Spark Core.
- *************************************************************************/
-
-
 #include "application.h"
 #include "Adafruit_Thermal.h"
 
 
-// Though most of these printers are factory configured for 19200 baud
-// operation, a few rare specimens instead work at 9600.  If so, change
-// this constant.  This will NOT make printing slower!  The physical
-// print and feed mechanisms are the limiting factor, not the port speed.
-#define BAUDRATE  19200
-
-// Number of microseconds to issue one byte to the printer.  11 bits
-// (not 8) to accommodate idle, start and stop bits.  Idle time might
-// be unnecessary, but erring on side of caution here.
+#define BAUDRATE  9600
 #define BYTE_TIME (11L * 1000000L / BAUDRATE)
 
 // Because there's no flow control between the printer and Arduino,
@@ -193,57 +168,9 @@ void Adafruit_Thermal::reset() {
 // Reset text formatting parameters.
 void Adafruit_Thermal::setDefault(){
   online();
-  justify('L');
-  inverseOff();
-  doubleHeightOff();
-  setLineHeight(32);
-  boldOff();
-  underlineOff();
-  setBarcodeHeight(50);
-  setSize('s');
-}
-
-void Adafruit_Thermal::test(){
-  println("Hello World!");
-  feed(2);
-}
-
-void Adafruit_Thermal::testPage() {
-  writeBytes(18, 84);
-  timeoutSet(
-    dotPrintTime * 24 * 26 +      // 26 lines w/text (ea. 24 dots high)
-    dotFeedTime * (8 * 26 + 32)); // 26 text lines (feed 8 dots) + blank line
-}
-
-void Adafruit_Thermal::setBarcodeHeight(int val) { // Default is 50
-  if(val < 1) val = 1;
-  barcodeHeight = val;
-  writeBytes(29, 104, val);
-}
-
-void Adafruit_Thermal::printBarcode(char * text, uint8_t type) {
-  int  i = 0;
-  byte c;
-
-  writeBytes(29,  72, 2);    // Print label below barcode
-  writeBytes(29, 119, 3);    // Barcode width
-  writeBytes(29, 107, type); // Barcode type (listed in .h file)
-  do { // Copy string + NUL terminator
-    writeBytes(c = text[i++]);
-  } while(c);
-  timeoutSet((barcodeHeight + 40) * dotPrintTime);
-  prevByte = '\n';
-  feed(2);
 }
 
 // === Character commands ===
-
-#define INVERSE_MASK       (1 << 1)
-#define UPDOWN_MASK        (1 << 2)
-#define BOLD_MASK          (1 << 3)
-#define DOUBLE_HEIGHT_MASK (1 << 4)
-#define DOUBLE_WIDTH_MASK  (1 << 5)
-#define STRIKE_MASK        (1 << 6)
 
 void Adafruit_Thermal::setPrintMode(uint8_t mask) {
   printMode |= mask;
@@ -267,66 +194,6 @@ void Adafruit_Thermal::normal() {
   writePrintMode();
 }
 
-void Adafruit_Thermal::inverseOn(){
-  setPrintMode(INVERSE_MASK);
-}
-
-void Adafruit_Thermal::inverseOff(){
-  unsetPrintMode(INVERSE_MASK);
-}
-
-void Adafruit_Thermal::upsideDownOn(){
-  setPrintMode(UPDOWN_MASK);
-}
-
-void Adafruit_Thermal::upsideDownOff(){
-  unsetPrintMode(UPDOWN_MASK);
-}
-
-void Adafruit_Thermal::doubleHeightOn(){
-  setPrintMode(DOUBLE_HEIGHT_MASK);
-}
-
-void Adafruit_Thermal::doubleHeightOff(){
-  unsetPrintMode(DOUBLE_HEIGHT_MASK);
-}
-
-void Adafruit_Thermal::doubleWidthOn(){
-  setPrintMode(DOUBLE_WIDTH_MASK);
-}
-
-void Adafruit_Thermal::doubleWidthOff(){
-  unsetPrintMode(DOUBLE_WIDTH_MASK);
-}
-
-void Adafruit_Thermal::strikeOn(){
-  setPrintMode(STRIKE_MASK);
-}
-
-void Adafruit_Thermal::strikeOff(){
-  unsetPrintMode(STRIKE_MASK);
-}
-
-void Adafruit_Thermal::boldOn(){
-  setPrintMode(BOLD_MASK);
-}
-
-void Adafruit_Thermal::boldOff(){
-  unsetPrintMode(BOLD_MASK);
-}
-
-void Adafruit_Thermal::justify(char value){
-  uint8_t pos = 0;
-
-  switch(toupper(value)) {
-    case 'L': pos = 0; break;
-    case 'C': pos = 1; break;
-    case 'R': pos = 2; break;
-  }
-
-  writeBytes(0x1B, 0x61, pos);
-}
-
 // Feeds by the specified number of lines
 void Adafruit_Thermal::feed(uint8_t x){
   // The datasheet claims sending bytes 27, 100, <x> will work, but
@@ -342,43 +209,6 @@ void Adafruit_Thermal::feedRows(uint8_t rows) {
 
 void Adafruit_Thermal::flush() {
   writeBytes(12);
-}
-
-void Adafruit_Thermal::setSize(char value){
-  uint8_t size;
-
-  switch(toupper(value)) {
-   default:  // Small: standard width and height
-    size       = 0x00;
-    charHeight = 24;
-    maxColumn  = 32;
-    break;
-   case 'M': // Medium: double height
-    size       = 0x01;
-    charHeight = 48;
-    maxColumn  = 32;
-    break;
-   case 'L': // Large: double width and height
-    size       = 0x11;
-    charHeight = 48;
-    maxColumn  = 16;
-    break;
-  }
-
-  writeBytes(29, 33, size, 10);
-  prevByte = '\n'; // Setting the size adds a linefeed
-}
-
-// Underlines of different weights can be produced:
-// 0 - no underline
-// 1 - normal underline
-// 2 - thick underline
-void Adafruit_Thermal::underlineOn(uint8_t weight) {
-  writeBytes(27, 45, weight);
-}
-
-void Adafruit_Thermal::underlineOff() {
-  underlineOn(0);
 }
 
 // fromProgMem is ignored
@@ -492,61 +322,7 @@ void Adafruit_Thermal::listen() {
   //_printer->listen();
 }
 
-// Check the status of the paper using the printers self reporting
-// ability. Doesn't match the datasheet...
-// Returns true for paper, false for no paper.
-bool Adafruit_Thermal::hasPaper() {
-  writeBytes(27, 118, 0);
-  
-  char stat;
-  // Some delay while checking.
-  // Could probably be done better...
-  for (int i = 0; i < 1000; i++) {
-    if (_printer->available()) {
-      stat = _printer->read();
-      break;
-    }
-  }
-  
-  // Mask the 3 LSB, this seems to be the one we care about.
-  stat = stat & 0b000100;
-  
-  // If it's set, no paper, if it's clear, we have paper.
-  if (stat == 0b000100) {
-    return false;
-  } else if (stat == 0b000000){
-    return true;
-    
-  }
-  
-}
-
-void Adafruit_Thermal::setLineHeight(int val) {
-  if(val < 24) val = 24;
-  lineSpacing = val - 24;
-
-  // The printer doesn't take into account the current text height
-  // when setting line height, making this more akin to inter-line
-  // spacing.  Default line spacing is 32 (char height of 24, line
-  // spacing of 8).
-  writeBytes(27, 51, val);
-}
-
 void Adafruit_Thermal::setMaxChunkHeight(int val) {
   maxChunkHeight = val;
 }
-
-////////////////////// not working?
-void Adafruit_Thermal::tab() {
-  PRINTER_PRINT(9);
-}
-void Adafruit_Thermal::setCharSpacing(int spacing) {
-  writeBytes(27, 32, 0, 10);
-}
-/////////////////////////
-
-// #if ARDUINO < 100
-// void *operator new(size_t size_) { return malloc(size_); }
-// void* operator new(size_t size_,void *ptr_) { return ptr_; }
-// #endif
 
