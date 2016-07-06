@@ -171,12 +171,11 @@ void Adafruit_Thermal::begin(SERIAL_IMPL* serial, int heatTime, int maxHeatingDo
   // is n(D7-D5)*250us.
   // (Unsure of the default value for either -- not documented)
 
-  writeBytes(18, 35); // DC2 # (print density)
-  writeBytes((printBreakTime << 5) | printDensity);
+  writeBytes(18, 35, (printBreakTime << 5) | printDensity); // DC2 # (print density)
 
   if(dtrPin < 255) {
     pinMode(dtrPin, INPUT_PULLUP);
-    writeBytes(29, 'a', (1 << 5));
+    writeBytes(29, 97, (1 << 5));
     dtrEnabled = true;
   }
 
