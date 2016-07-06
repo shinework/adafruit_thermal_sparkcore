@@ -71,11 +71,6 @@ void Adafruit_Thermal::setTimes(unsigned long p, unsigned long f) {
   dotFeedTime  = f;
 }
 
-// Constructor
-Adafruit_Thermal::Adafruit_Thermal() {
-
-}
-
 Adafruit_Thermal::Adafruit_Thermal(uint8_t dtr) : dtrPin(dtr) {
   dtrEnabled = false;
 }
