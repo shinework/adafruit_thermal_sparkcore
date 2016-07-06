@@ -37,7 +37,7 @@ class Adafruit_Thermal : public Print {
 
  public:
 
-  Adafruit_Thermal();
+  Adafruit_Thermal(uint8_t dtr=255);
 
   void
     begin(SERIAL_IMPL* serial, int heatTime=200, int maxHeatingDots=20, int heatingInterval=250, int printDensity=14, int printBreakTime=4),
