@@ -106,6 +106,7 @@ class Adafruit_Thermal : public Print {
     charHeight,    // Height of characters, in 'dots'
     lineSpacing,   // Inter-line spacing (not line height), in dots
     barcodeHeight; // Barcode height in dots, not including text
+    dtrPin;
   unsigned long
     resumeTime,    // Wait until micros() exceeds this before sending byte
     dotPrintTime,  // Time to print a single dot line, in microseconds

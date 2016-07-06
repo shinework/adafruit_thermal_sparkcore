@@ -43,12 +43,16 @@
 
 // This method sets the estimated completion time for a just-issued task.
 void Adafruit_Thermal::timeoutSet(unsigned long x) {
-  resumeTime = micros() + x;
+  if(!dtrEnabled) resumeTime = micros() + x;
 }
 
 // This function waits (if necessary) for the prior task to complete.
 void Adafruit_Thermal::timeoutWait() {
-  while((long)(micros() - resumeTime) < 0L); // Rollover-proof
+    if(dtrEnabled) {
+        while(digitalRead(dtrPin) == HIGH);
+    } else {
+        while((long)(micros() - resumeTime) < 0L); // (syntax is rollover-proof)
+    }
 }
 
 // Printer performance may vary based on the power supply voltage,
@@ -70,6 +74,10 @@ void Adafruit_Thermal::setTimes(unsigned long p, unsigned long f) {
 // Constructor
 Adafruit_Thermal::Adafruit_Thermal() {
 
+}
+
+Adafruit_Thermal::Adafruit_Thermal(uint8_t dtr) : dtrPin(dtr) {
+  dtrEnabled = false;
 }
 
 // The next four helper methods are used when issuing configuration
@@ -170,6 +178,12 @@ void Adafruit_Thermal::begin(SERIAL_IMPL* serial, int heatTime, int maxHeatingDo
 
   writeBytes(18, 35); // DC2 # (print density)
   writeBytes((printBreakTime << 5) | printDensity);
+
+  if(dtrPin < 255) {
+    pinMode(dtrPin, INPUT_PULLUP);
+    writeBytes(29, 'a', (1 << 5));
+    dtrEnabled = true;
+  }
 
   dotPrintTime = 30000; // See comments near top of file for
   dotFeedTime  =  2100; // an explanation of these values.
