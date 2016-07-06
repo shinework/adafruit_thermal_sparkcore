@@ -114,6 +114,8 @@ class Adafruit_Thermal : public Print {
   int
     printMode,
     maxChunkHeight;
+  boolg
+    dtrEnabled;
   void
     setPrintMode(uint8_t mask),
     unsetPrintMode(uint8_t mask),
